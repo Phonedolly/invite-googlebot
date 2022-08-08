@@ -1,9 +1,4 @@
-from __future__ import print_function
-
-__author__ = "jcgregorio@google.com (Joe Gregorio)"
-
 import json
-import sys
 
 from oauth2client import client
 from googleapiclient import sample_tools
@@ -11,37 +6,18 @@ from googleapiclient import sample_tools
 SCOPE = 'https://www.googleapis.com/auth/blogger'
 
 
-def main(argv):
-    # Authenticate and construct service.
-    service, flags = sample_tools.init(
-        argv,
-        "blogger",
-        "v3",
-        __doc__,
-        __file__,
-        scope="https://www.googleapis.com/auth/blogger",
-    )
-
+def poster(robotable_url: str, posts):
     try:
-        posts = service.posts()
-
-        print("Input New Post URL: ", end='')
-        new_url = input()
-
-        blog_id = None
-        post_id = None
-
         with open('settings.json', encoding='utf-8') as f:
             settings = json.load(f)
             blog_id = str(settings['blogID'])
             post_id = str(settings['postID'])
 
         body = posts.get(blogId=blog_id, postId=post_id).execute()
-        body['content'] = body['content'] \
-                          + '<br><a href="' + new_url + '">' + new_url + '&nbsp;</a>'  # 문자열을 읽을 때에는 json.loads()를 사용한다
+        body['content'] = body['content'] + '<br><a href="' + robotable_url + '">' + robotable_url + '</a>'
 
         res = posts.update(blogId=blog_id, postId=post_id, body=body).execute()
-        print(res)
+        print('업데이트 완료')
 
     except client.AccessTokenRefreshError:
         print(
@@ -50,5 +26,43 @@ def main(argv):
         )
 
 
+def extract_robotable_link(post_url: str, naver_id: str) -> str:
+    _post_id = post_url[post_url.rfind('/') + 1:]
+    return 'https://blog.naver.com/PostView.naver?blogId=' + naver_id + '&logNo=' \
+           + _post_id + '&redirect=Dlog&widgetTypeCall=true&directAccess=false'
+
+
+def init() -> tuple:
+    # Authenticate and construct service.
+    _service, _flags = sample_tools.init(
+        '',
+        "blogger",
+        "v3",
+        __doc__,
+        __file__,
+        scope="https://www.googleapis.com/auth/blogger",
+    )
+    _posts = _service.posts()
+
+    with open('settings.json', encoding='utf-8') as f:
+        settings = json.load(f)
+        _naver_id = str(settings['naverID'])
+        _blog_id = str(settings['blogID'])
+        _post_id = str(settings['postID'])
+
+    return _naver_id, _blog_id, _post_id, _posts
+
+
 if __name__ == "__main__":
-    main(sys.argv)
+    __naver_id, __blog_id, __post_id, __posts = init()
+
+    print('Q를 입력할 때까지 계속 입력할 수 있습니다')
+
+    while True:
+        print('옵션이나 포스트 URL을 입력하세요: ', end='')
+        input_data = input()
+
+        if input_data.upper() == 'Q':
+            break
+        else:
+            poster(extract_robotable_link(input_data, naver_id=__naver_id), posts=__posts)
