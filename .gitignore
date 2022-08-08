@@ -1,5 +1,7 @@
 # data file
-data.txt
+blogger.dat
+client_secrets.json
+settings.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
