@@ -50,11 +50,11 @@ def init() -> tuple:
         _blog_id = str(settings['blogID'])
         _post_id = str(settings['postID'])
 
-    return _naver_id, _blog_id, _post_id, _posts
+    return _naver_id, _blog_id, _post_id, _service
 
 
 if __name__ == "__main__":
-    __naver_id, __blog_id, __post_id, __posts = init()
+    __naver_id, __blog_id, __post_id, __service = init()
 
     print('Q를 입력할 때까지 계속 입력할 수 있습니다')
 
@@ -63,6 +63,7 @@ if __name__ == "__main__":
         input_data = input()
 
         if input_data.upper() == 'Q':
+            __service.close()
             break
         else:
-            poster(extract_robotable_link(input_data, naver_id=__naver_id), posts=__posts)
+            poster(extract_robotable_link(input_data, naver_id=__naver_id), posts=__service.posts())
