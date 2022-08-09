@@ -37,7 +37,7 @@ def poster(robotable_url: str, title: str, posts):
 def extract_robotable_link_and_title(post_url: str, naver_id: str) -> str:
     robotable_url = 'https://blog.naver.com' + \
                     BeautifulSoup(requests.get(post_url).content, features='lxml').select_one('iframe')['src']
-    title = BeautifulSoup(requests.get(robotable_url).content, features='lxml').select_one('title').string
+    title = BeautifulSoup(requests.get(robotable_url).content, features='lxml').select_one('title').string[:-10]
 
     return robotable_url, title
 
