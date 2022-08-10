@@ -22,7 +22,7 @@ def poster(robotable_url: str, title: str, posts):
 
         body = posts.get(blogId=blog_id, postId=post_id).execute()
         body['content'] = body[
-                              'content'] + '<a href="' + robotable_url + '">' + robotable_url + '</a> ' + title + '<br>'
+            'content'] + '<a href="' + robotable_url + '">' + robotable_url + '</a> ' + title + '<br>'
 
         res = posts.update(blogId=blog_id, postId=post_id, body=body).execute()
         print('업데이트 완료')
@@ -34,10 +34,12 @@ def poster(robotable_url: str, title: str, posts):
         )
 
 
-def extract_robotable_link_and_title(post_url: str, naver_id: str) -> str:
+def extract_robotable_link_and_title(post_url: str) -> str:
     robotable_url = 'https://blog.naver.com' + \
-                    BeautifulSoup(requests.get(post_url).content, features='lxml').select_one('iframe')['src']
-    title = BeautifulSoup(requests.get(robotable_url).content, features='lxml').select_one('title').string[:-10]
+                    BeautifulSoup(requests.get(post_url).content,
+                                  features='lxml').select_one('iframe')['src']
+    title = BeautifulSoup(requests.get(robotable_url).content,
+                          features='lxml').select_one('title').string[:-10]
 
     return robotable_url, title
 
@@ -56,11 +58,10 @@ def init(argv) -> tuple:
 
     with open('settings.json', encoding='utf-8') as f:
         settings = json.load(f)
-        _naver_id = str(settings['naverID'])
         _blog_id = str(settings['blogID'])
         _post_id = str(settings['postID'])
 
-    return _naver_id, _blog_id, _post_id, _service
+    return _blog_id, _post_id, _service
 
 
 def test():
@@ -69,7 +70,7 @@ def test():
 
 if __name__ == "__main__":
     test()
-    __naver_id, __blog_id, __post_id, __service = init(sys.argv)
+    __blog_id, __post_id, __service = init(sys.argv)
     __posts = __service.posts()
     print('Q를 입력할 때까지 계속 입력할 수 있습니다')
 
@@ -81,5 +82,5 @@ if __name__ == "__main__":
             __service.close()
             break
         else:
-            _link, _title = extract_robotable_link_and_title(input_data, naver_id=__naver_id)
+            _link, _title = extract_robotable_link_and_title(input_data)
             poster(_link, _title, posts=__posts)
